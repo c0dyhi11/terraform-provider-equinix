@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/antihax/optional v1.0.0
 	github.com/equinix-labs/fabric-go v0.4.0
-	github.com/equinix-labs/metal-go v0.5.0
+	github.com/equinix-labs/metal-go v0.6.0
 	github.com/equinix/ecx-go/v2 v2.3.0
 	github.com/equinix/ne-go v1.7.0
 	github.com/equinix/oauth2-go v1.0.0

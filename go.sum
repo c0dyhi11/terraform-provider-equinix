@@ -115,6 +115,8 @@ github.com/equinix-labs/fabric-go v0.4.0 h1:YM6jkdPlYJrgUEfCqt1WpXe2gACM5EavRL26
 github.com/equinix-labs/fabric-go v0.4.0/go.mod h1:/0uePNYbhu/1qWrxhD011AjU6yjf7r0sZgTCn8TyitI=
 github.com/equinix-labs/metal-go v0.5.0 h1:n86lrMi1EAHN+eOpwoPZ37OxBS9cS2Xgup/mqD5Hkwo=
 github.com/equinix-labs/metal-go v0.5.0/go.mod h1:uTuxWkVf/wl9VUBYnCtecRtHfdTCeajDwgzluSZBD7U=
+github.com/equinix-labs/metal-go v0.6.0 h1:rX5XnPt95HlDMtITSjwQjqFzu1AKQqCult/9uy/lFNw=
+github.com/equinix-labs/metal-go v0.6.0/go.mod h1:uTuxWkVf/wl9VUBYnCtecRtHfdTCeajDwgzluSZBD7U=
 github.com/equinix/ecx-go/v2 v2.3.0 h1:SOABrI2TP073Mx3gVoWa4qGlot1Z2hECAOY8W4nYDPU=
 github.com/equinix/ecx-go/v2 v2.3.0/go.mod h1:FvCdZ3jXU8Z4CPKig2DT+4J2HdwgRK17pIcznM7RXyk=
 github.com/equinix/ne-go v1.7.0 h1:Z2KJYaS624kqhZrDG+uLtdCVC/cWs8USgXaNLV7UiwE=

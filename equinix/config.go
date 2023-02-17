@@ -86,9 +86,10 @@ type Config struct {
 	metal   *packngo.Client
 	metalgo *metalv1.APIClient
 
-	ecxUserAgent   string
-	neUserAgent    string
-	metalUserAgent string
+	ecxUserAgent     string
+	neUserAgent      string
+	metalUserAgent   string
+	metalGoUserAgent string
 
 	terraformVersion string
 	fabricClient     *v4.APIClient
@@ -208,13 +209,12 @@ func (c *Config) NewMetalClient() *packngo.Client {
 
 // NewMetalGoClient returns a new metal-go client for accessing Equinix Metal's API.
 func (c *Config) NewMetalGoClient() *metalv1.APIClient {
-	// TODO: User agent
 	configuration := metalv1.NewConfiguration()
 	configuration.Debug = true
-	// TODO: push auth down into metal-go?
-	// TODO: support config file for auth in addition to environment variable
 	configuration.AddDefaultHeader("X-Auth-Token", os.Getenv("METAL_AUTH_TOKEN"))
+	configuration.UserAgent = c.fullUserAgent("equinix/metal-go")
 	client := metalv1.NewAPIClient(configuration)
+	c.metalGoUserAgent = configuration.UserAgent
 	return client
 }
 

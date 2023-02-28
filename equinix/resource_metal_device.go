@@ -438,13 +438,17 @@ func resourceMetalDevice() *schema.Resource {
 			},
 		},
 		CustomizeDiff: customdiff.Sequence(
-			customdiff.ForceNewIf("custom_data", shouldReinstall),
 			customdiff.ForceNewIf("operating_system", shouldReinstall),
-			customdiff.ForceNewIf("user_data", shouldReinstall),
-			customdiff.ForceNewIf("custom_data", behaviorForceNew("immutable_custom_data")),
-			customdiff.ForceNewIf("user_data", behaviorForceNew("immutable_user_data")),
-			customdiff.ForceNewIf("ipxe_script_url", behaviorForceNew("immutable_ipxe_script_url")),
+			customdiff.ForceNewIf("custom_data", requiresForceNew("immutable_custom_data")),
+			customdiff.ForceNewIf("user_data", requiresForceNew("immutable_user_data")),
+			customdiff.ForceNewIf("ipxe_script_url", requiresForceNew("immutable_ipxe_script_url")),
 		),
+	}
+}
+
+func requiresForceNew(field string) customdiff.ResourceConditionFunc {
+	return func(ctx context.Context, d *schema.ResourceDiff, meta interface{}) bool {
+		return shouldReinstall(ctx, d, meta) && behaviorImmutable(d.Get("behaviors"), field)
 	}
 }
 
@@ -472,12 +476,6 @@ func shouldReinstall(_ context.Context, d *schema.ResourceDiff, meta interface{}
 	}
 
 	return !reinstall_config["enabled"].(bool)
-}
-
-func behaviorForceNew(field string) customdiff.ResourceConditionFunc {
-	return func(_ context.Context, d *schema.ResourceDiff, meta interface{}) bool {
-		return !behaviorImmutable(d.Get("behaviors"), field)
-	}
 }
 
 func behaviorImmutable(behaviors interface{}, field string) bool{

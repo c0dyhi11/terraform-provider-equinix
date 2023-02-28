@@ -407,11 +407,43 @@ func resourceMetalDevice() *schema.Resource {
 					},
 				},
 			},
+
+			"behaviors": {
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Description: "Behaviors are configurable provider resource behaviors that do not map directly to API features. Behaviors affect how the provider applies property changes when the desired affect is not obvious. Some use-cases may benefit from API mutable fields being treated as mutable in the provider, while others prefer the fields to be treated as immutable.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"immutable_user_data": {
+							Type:        schema.TypeBool,
+							Description: "Whether changes to the user_data field should result in a new device. The default, false, allows mutations (changes) to the user_data without destroying the device instance.",
+							Optional:    true,
+							Default:     false,
+						},
+						"immutable_ipxe_script_url": {
+							Type:        schema.TypeBool,
+							Description: "Whether changes to the ipxe_script_url field should result in a new device. The default, false, allows mutations (changes) to the ipxe_script_url without destroying the device instance.",
+							Optional:    true,
+							Default:     false,
+						},
+						"immutable_custom_data": {
+							Type:        schema.TypeBool,
+							Description: "Whether changes to the custom_data field should result in a new device. The default, false, allows mutations (changes) to the custom_data without destroying the device instance.",
+							Optional:    true,
+							Default:     false,
+						},
+					},
+				},
+			},
 		},
 		CustomizeDiff: customdiff.Sequence(
 			customdiff.ForceNewIf("custom_data", shouldReinstall),
 			customdiff.ForceNewIf("operating_system", shouldReinstall),
 			customdiff.ForceNewIf("user_data", shouldReinstall),
+			customdiff.ForceNewIf("custom_data", behaviorForceNew("custom_data")),
+			customdiff.ForceNewIf("user_data", behaviorForceNew("user_data")),
+			customdiff.ForceNewIf("ipxe_script_url", behaviorForceNew("ipxe_script_url")),
 		),
 	}
 }
@@ -440,6 +472,27 @@ func shouldReinstall(_ context.Context, d *schema.ResourceDiff, meta interface{}
 	}
 
 	return !reinstall_config["enabled"].(bool)
+}
+
+func behaviorForceNew(field string) customdiff.ResourceConditionFunc {
+	return func(_ context.Context, d *schema.ResourceDiff, meta interface{}) bool {
+		behaviors := d.Get("behaviors")
+
+		// We didn't get a behaviors configuration
+		behaviors_list, ok := behaviors.([]interface{})
+		if !ok {
+			return false
+		}
+
+		behaviors_config, ok := behaviors_list[0].(map[string]interface{})
+
+		// We didn't get a behaviors configuration
+		if !ok {
+			return false
+		}
+
+		return !behaviors_config[field].(bool)
+	}
 }
 
 func resourceMetalDeviceCreate(d *schema.ResourceData, meta interface{}) error {

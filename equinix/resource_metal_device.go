@@ -441,9 +441,9 @@ func resourceMetalDevice() *schema.Resource {
 			customdiff.ForceNewIf("custom_data", shouldReinstall),
 			customdiff.ForceNewIf("operating_system", shouldReinstall),
 			customdiff.ForceNewIf("user_data", shouldReinstall),
-			customdiff.ForceNewIf("custom_data", behaviorForceNew("custom_data")),
-			customdiff.ForceNewIf("user_data", behaviorForceNew("user_data")),
-			customdiff.ForceNewIf("ipxe_script_url", behaviorForceNew("ipxe_script_url")),
+			customdiff.ForceNewIf("custom_data", behaviorForceNew("immutable_custom_data")),
+			customdiff.ForceNewIf("user_data", behaviorForceNew("immutable_user_data")),
+			customdiff.ForceNewIf("ipxe_script_url", behaviorForceNew("immutable_ipxe_script_url")),
 		),
 	}
 }
@@ -476,23 +476,25 @@ func shouldReinstall(_ context.Context, d *schema.ResourceDiff, meta interface{}
 
 func behaviorForceNew(field string) customdiff.ResourceConditionFunc {
 	return func(_ context.Context, d *schema.ResourceDiff, meta interface{}) bool {
-		behaviors := d.Get("behaviors")
-
-		// We didn't get a behaviors configuration
-		behaviors_list, ok := behaviors.([]interface{})
-		if !ok {
-			return false
-		}
-
-		behaviors_config, ok := behaviors_list[0].(map[string]interface{})
-
-		// We didn't get a behaviors configuration
-		if !ok {
-			return false
-		}
-
-		return !behaviors_config[field].(bool)
+		return !behaviorImmutable(d.Get("behaviors"), field)
 	}
+}
+
+func behaviorImmutable(behaviors interface{}, field string) bool{
+	// We didn't get a behaviors configuration
+	behaviors_list, ok := behaviors.([]interface{})
+	if !ok {
+		return false
+	}
+
+	behaviors_config, ok := behaviors_list[0].(map[string]interface{})
+
+	// We didn't get a behaviors configuration
+	if !ok {
+		return false
+	}
+
+	return behaviors_config[field].(bool)
 }
 
 func resourceMetalDeviceCreate(d *schema.ResourceData, meta interface{}) error {
@@ -794,7 +796,9 @@ func resourceMetalDeviceUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	if d.HasChange("operating_system") || d.HasChange("user_data") || d.HasChange("custom_data") {
+	if d.HasChange("operating_system") || 
+	(d.HasChange("user_data") && behaviorImmutable(d.Get("behaviors"), "immutable_user_data")) || 
+	(d.HasChange("custom_data") && behaviorImmutable(d.Get("behaviors"), "immutable_custom_data")) {
 		reinstallOptions, err := getReinstallOptions(d)
 		if err != nil {
 			return friendlyError(err)
